@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borges & Loterias - Analisador Mega Sena</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        'hot': '#ff4d4d',
+                        'warm': '#ffca28',
+                        'cold': '#81d4fa',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'fade-in-down': 'fadeInDown 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeInDown: {
+                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #1a1a2e;
+            background-image: radial-gradient(#252540 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Ouro Vibrante */
+        .gold-text-3d {
+            background: linear-gradient(to bottom, #FFD700 0%, #FDB931 50%, #d4af37 100%); 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #FFD700;
+            text-shadow: 
+                2px 2px 0px #000, 
+                4px 4px 0px rgba(0,0,0,0.3);
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* 3D Container Styling */
+        .card-3d {
+            background: #ffffff;
+            border: 4px solid #000000;
+            box-shadow: 8px 8px 0px #000000;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        /* Ball Styling 3D */
+        .loto-ball {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 3px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: #000;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3), 3px 3px 0px #000;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+            cursor: default;
+        }
+
+        .loto-ball:hover {
+            transform: scale(1.15) rotate(5deg);
+            z-index: 10;
+        }
+
+        .loto-ball::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            width: 15px;
+            height: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            transform: rotate(-45deg);
+        }
+
+        /* Heat Colors */
+        .bg-hot { background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff0000); }
+        .bg-warm { background: radial-gradient(circle at 30% 30%, #fff176, #fbc02d); }
+        .bg-cold { background: radial-gradient(circle at 30% 30%, #e0f7fa, #4dd0e1); }
+
+        /* Solid Heat Colors for Grid */
+        .grid-hot { background-color: #ff4d4d; color: white; border-color: #000; }
+        .grid-warm { background-color: #ffca28; color: black; border-color: #000; }
+        .grid-cold { background-color: #81d4fa; color: black; border-color: #000; }
+        /* Alterado para fundo branco e número preto conforme solicitado */
+        .grid-neutral { background-color: #ffffff; color: #000000; border-color: #e5e7eb; }
+
+        /* Quadrant Grid */
+        .quadrant-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            /* Remove gap to use borders for division */
+            gap: 2px;
+            background: #000;
+            padding: 4px;
+            border: 4px solid #000;
+            box-shadow: 5px 5px 0px #000;
+        }
+        .q-cell {
+            width: 100%;
+            aspect-ratio: 1;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border-radius: 2px;
+            transition: transform 0.1s;
+            border: 1px solid transparent;
+        }
+        
+        /* Quadrant Borders Logic Classes */
+        .border-q-right { border-right: 4px solid #000 !important; }
+        .border-q-bottom { border-bottom: 4px solid #000 !important; }
+
+        /* Frequency List Styling */
+        .freq-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000;
+            border-radius: 6px;
+            padding: 4px;
+            font-weight: bold;
+        }
+        .freq-count {
+            font-size: 0.7rem;
+            background: #000;
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-top: 2px;
+        }
+
+        /* Loading Animation */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #FFD700;
+            border-bottom: 8px solid #FFD700;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Button 3D */
+        .btn-3d {
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .btn-3d:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .ribbon-tag {
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            border: 2px solid #fff;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+        }
+
+        /* --- STYLES FOR CODE-GENERATED VIDEO --- */
+        #codeVideoContainer {
+            background: radial-gradient(circle, #001f3f 0%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #FFD700;
+            box-shadow: inset 0 0 50px #000;
+        }
+        .video-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            pointer-events: none;
+        }
+        .video-scene.active {
+            opacity: 1;
+        }
+        .video-text-main {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #FFD700;
+            text-shadow: 4px 4px 0 #000;
+            text-align: center;
+            transform: scale(0.5);
+            transition: transform 4s ease-out;
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.2;
+            padding: 0 20px;
+        }
+        .video-scene.active .video-text-main {
+            transform: scale(1.0);
+        }
+        .video-text-sub {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-top: 10px;
+            text-shadow: 2px 2px 0 #000;
+            opacity: 0;
+            animation: fadeIn 1s forwards 0.5s;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+        
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(500px); }
+        }
+        .icon-bounce {
+            font-size: 6rem;
+            color: #fff;
+            margin-bottom: 20px;
+            animation: bounce-video 2s infinite;
+            filter: drop-shadow(0 0 10px gold);
+        }
+        @keyframes bounce-video {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <!-- Header Section -->
+    <header class="w-full text-center py-8 px-4 bg-gray-900 border-b-8 border-black relative overflow-hidden">
+        <div class="relative z-10 animate-fade-in-down">
+            <h1 class="text-4xl md:text-6xl gold-text-3d mb-2 tracking-tighter">BORGES & LOTERIAS</h1>
+            
+            <div class="inline-block mt-4 mb-2">
+                <div class="bg-red-600 text-white font-black text-sm md:text-lg px-6 py-2 border-4 border-black shadow-[4px_4px_0px_#fff]">
+                    <i class="fas fa-star text-yellow-300 mr-2"></i> FELIZ NATAL E PRÓSPERO ANO NOVO
+                </div>
+            </div>
+            
+            <h2 class="text-white font-bold mt-2 text-sm tracking-widest uppercase opacity-80">Analisador Profissional Mega Sena</h2>
+        </div>
+    </header>
+
+    <!-- NEW: Promo Video Button -->
+    <div class="container mx-auto px-4 mt-6 text-center">
+        <button onclick="openVideo()" class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium rounded-lg group bg-gradient-to-br from-red-600 to-red-500 group-hover:from-red-600 group-hover:to-red-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 transform transition hover:scale-105">
+            <span class="relative px-8 py-4 transition-all ease-in duration-75 bg-red-600 text-white rounded-md group-hover:bg-opacity-0 font-black text-xl border-4 border-yellow-400 shadow-[0_0_15px_rgba(255,0,0,0.8)] animate-pulse">
+                <i class="fas fa-exclamation-circle mr-2"></i> ATENÇÃO, CLIQUE AQUI
+            </span>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 mt-4 max-w-6xl">
+        
+        <!-- Status Bar -->
+        <div id="statusBar" class="flex flex-col md:flex-row justify-between items-center mb-8 card-3d p-4 bg-blue-50">
+            <div class="flex items-center gap-3 mb-4 md:mb-0">
+                <div class="relative">
+                    <div id="statusDot" class="bg-yellow-500 w-5 h-5 rounded-full border-2 border-black"></div>
+                    <div id="statusPing" class="hidden absolute top-0 right-0 -mr-1 -mt-1 w-2 h-2 bg-green-300 rounded-full animate-ping"></div>
+                </div>
+                <div>
+                    <span id="statusText" class="block font-black text-gray-900 text-lg leading-none">AGUARDANDO...</span>
+                    <span class="text-xs font-bold text-gray-600" id="sourceText">Sistema Multi-Fontes</span>
+                </div>
+            </div>
+            
+            <button onclick="runAnalysis()" class="btn-3d bg-yellow-400 hover:bg-yellow-300 text-black py-2 px-8 rounded text-lg flex items-center">
+                <i class="fas fa-sync-alt mr-2"></i> ATUALIZAR DADOS
+            </button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingScreen" class="hidden fixed inset-0 bg-gray-900/95 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+            <div class="loader mb-4"></div>
+            <h2 class="text-3xl text-yellow-400 font-black gold-text-3d text-center mb-2">BUSCANDO RESULTADOS</h2>
+            <div class="w-64 h-4 bg-gray-700 rounded-full overflow-hidden mb-2">
+                <div id="progressBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p class="text-white font-mono font-bold text-sm" id="loadingText">Iniciando...</p>
+        </div>
+
+        <!-- Simulated Video Modal -->
+        <div id="videoModal" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="relative w-full max-w-4xl bg-black border-4 border-yellow-500 rounded-lg shadow-2xl animate-fade-in-down overflow-hidden">
+                <!-- Close Button -->
+                <button onclick="closeVideo()" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white w-10 h-10 rounded-full font-black border-2 border-white z-50 shadow-lg flex items-center justify-center transition-transform hover:scale-110">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- CODE VIDEO CONTAINER -->
+                <div id="codeVideoContainer" class="aspect-video w-full relative">
+                    <canvas id="particleCanvas" class="confetti-canvas"></canvas>
+                    
+                    <!-- Scene 1: Intro -->
+                    <div id="scene1" class="video-scene active">
+                        <i class="fas fa-gift icon-bounce text-red-500"></i>
+                        <h2 class="video-text-main text-white">BORGES & LOTERIAS</h2>
+                    </div>
+
+                    <!-- Scene 2: Thanks 2025 -->
+                    <div id="scene2" class="video-scene">
+                        <i class="fas fa-users icon-bounce text-yellow-400"></i>
+                        <h2 class="video-text-main text-green-400">AOS AMIGOS E AMIGAS<br><span class="text-white text-2xl font-normal">QUE NOS ACOMPANHARAM EM 2025</span></h2>
+                    </div>
+
+                    <!-- Scene 3: Believe -->
+                    <div id="scene3" class="video-scene">
+                        <i class="fas fa-heart icon-bounce text-red-500"></i>
+                        <h2 class="video-text-main text-white">OBRIGADO POR ACREDITAREM<br><span class="text-yellow-400 text-3xl">NO MEU TRABALHO</span></h2>
+                    </div>
+
+                    <!-- Scene 4: Gratitude -->
+                    <div id="scene4" class="video-scene">
+                        <i class="fas fa-star icon-bounce text-blue-300"></i>
+                        <h2 class="video-text-main text-blue-200">GRATIDÃO POR<br><span class="text-white">CADA MOMENTO JUNTOS!</span></h2>
+                    </div>
+                    
+                    <!-- Scene 5: Final -->
+                    <div id="scene5" class="video-scene">
+                        <i class="fas fa-trophy icon-bounce text-yellow-500"></i>
+                        <h2 class="video-text-main text-yellow-300">QUE 2026 SEJA UM ANO<br>DE MUITA SORTE!</h2>
+                    </div>
+                </div>
+                
+                <!-- Controls (Fake) -->
+                <div class="bg-gray-900 p-2 flex items-center gap-4 text-white">
+                    <i class="fas fa-play"></i>
+                    <div class="h-1 bg-gray-700 flex-grow rounded overflow-hidden">
+                        <div id="videoProgress" class="h-full bg-red-500 w-0 transition-all duration-1000 ease-linear"></div>
+                    </div>
+                    <span class="text-xs font-mono">HD</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="errorAlert" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-100 border-4 border-red-600 text-red-900 px-6 py-4 rounded shadow-2xl z-50 max-w-md w-full text-center card-3d">
+            <strong class="block font-bold text-xl mb-2">Atenção</strong>
+            <span class="block text-sm mb-4" id="errorMsg">Erro na conexão.</span>
+            <button onclick="document.getElementById('errorAlert').classList.add('hidden')" class="bg-red-600 text-white font-bold py-2 px-4 rounded border-2 border-black shadow-[2px_2px_0_#000]">
+                FECHAR
+            </button>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div id="dashboard" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Main Analysis: The 20 Stones -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Recommendations Card -->
+                <div class="card-3d bg-white p-6">
+                    <div class="flex justify-between items-center border-b-4 border-black pb-2 mb-4">
+                        <h3 class="text-2xl font-black text-gray-900 uppercase">
+                            <i class="fas fa-crosshairs text-red-500 mr-2"></i>TOP 20 SUGERIDAS
+                        </h3>
+                        <div class="bg-gray-200 px-2 py-1 rounded border border-gray-400 text-xs font-bold">
+                            Balanceado: 40% Quentes / 40% Mornas / 20% Frias
+                        </div>
+                    </div>
+
+                    <div id="numbersGrid" class="flex flex-wrap gap-3 justify-center md:justify-start min-h-[100px]">
+                        <div class="text-gray-400 font-bold italic w-full text-center self-center">Clique em "Atualizar Dados" para iniciar a inteligência.</div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="mt-6 flex flex-wrap gap-4 justify-center bg-gray-100 p-3 rounded border-2 border-gray-200">
+                        <div class="flex items-center text-xs font-bold"><div class="w-4 h-4 rounded-full bg-hot border border-black mr-2"></div> QUENTES (Alta Freq.)</div>
+                        <div class="flex items-center text-xs font-bold"><div class="w-4 h-4 rounded-full bg-warm border border-black mr-2"></div> MORNAS (Média Freq.)</div>
+                        <div class="flex items-center text-xs font-bold"><div class="w-4 h-4 rounded-full bg-cold border border-black mr-2"></div> FRIAS (Baixa Freq.)</div>
+                    </div>
+                </div>
+
+                <!-- Last Draw Info -->
+                <div class="card-3d bg-indigo-50 p-4 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-black text-indigo-900 text-sm uppercase">Último Sorteio Detectado</h4>
+                        <p id="lastDrawDate" class="font-bold text-gray-600 text-xs">--</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-gray-800" id="reliabilityScore">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Quadrants Sidebar -->
+            <div class="space-y-6">
+                
+                <!-- Full Heatmap Visualization (01-60) -->
+                <div class="card-3d bg-white p-4">
+                    <div class="ribbon-tag bg-blue-600 border-blue-200">MAPA TÉRMICO (SELEÇÃO)</div>
+                    <h3 class="text-lg font-black text-gray-800 mb-2 text-center mt-2">CARTELA (01-60)</h3>
+                    <p class="text-xs text-center text-gray-500 mb-3 font-bold">Apenas as 20 escolhidas estão pintadas</p>
+                    
+                    <div class="relative">
+                        <div id="fullCartela" class="quadrant-grid">
+                            <!-- 1 to 60 Grid -->
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs font-bold text-center mt-2 text-gray-500">Divisão por Quadrantes</p>
+                </div>
+            </div>
+
+            <!-- New Section: Frequency Ranking (Compact) -->
+            <div class="lg:col-span-3 card-3d bg-white p-6">
+                <div class="ribbon-tag bg-blue-800 border-blue-400">RANKING ESTATÍSTICO</div>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 mt-2">
+                    <h3 class="text-xl font-black text-gray-900 uppercase">
+                        <i class="fas fa-sort-amount-down mr-2 text-yellow-500"></i> Frequência (Últimos 60)
+                    </h3>
+                    <span class="text-xs font-bold text-gray-500">Ordenado do Mais Quente para o Mais Frio</span>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200 max-h-[400px] overflow-y-auto">
+                    <div id="frequencyGrid" class="grid grid-cols-5 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                        <!-- Frequency Items injected here -->
+                        <div class="col-span-full text-center text-gray-400 py-4 font-bold">Aguardando dados...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="mt-12 text-center text-white py-6 bg-gray-900 border-t-8 border-yellow-500">
+        <h2 class="gold-text-3d text-xl mb-1">BORGES & LOTERIAS</h2>
+        <p class="font-bold text-gray-500 text-xs">© 2025 - Todos os direitos reservados</p>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        const TOTAL_NUMBERS = 60;
+        const ANALYSIS_DEPTH = 60; 
+
+        // Fontes de API (Redundância)
+        const SOURCES = [
+            { name: "Heroku Wrapper", url: "https://loteriascaixa-api.herokuapp.com/api/megasena", type: "standard" },
+            { name: "Caixa Oficial (Proxy)", url: "https://corsproxy.io/?https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena", type: "official" }
+        ];
+
+        let frequencyMap = {};
+        let selectedNumbers = [];
+        let currentSourceIndex = 0;
+        
+        // Video State
+        let videoInterval = null;
+        let particleInterval = null;
+        const TOTAL_VIDEO_DURATION = 15000; // Increased to 15 seconds for 5 scenes
+        let currentScene = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFullCartela();
+        });
+
+        // --- NEW: Code-Based Video Logic ---
+        function openVideo() {
+            const modal = document.getElementById('videoModal');
+            modal.classList.remove('hidden');
+            startCodeVideo();
+        }
+
+        function closeVideo() {
+            const modal = document.getElementById('videoModal');
+            modal.classList.add('hidden');
+            stopCodeVideo();
+        }
+        
+        // Clicar fora fecha
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideo();
+            }
+        });
+
+        function startCodeVideo() {
+            // Reset state
+            currentScene = 0;
+            const progress = document.getElementById('videoProgress');
+            progress.style.width = '0%';
+            
+            // Hide all scenes initially
+            [1,2,3,4,5].forEach(n => {
+                const el = document.getElementById('scene'+n);
+                if(el) el.classList.remove('active');
+            });
+            
+            // Start Canvas Particles (Snow/Confetti)
+            startParticles();
+            
+            // Start Timeline
+            let startTime = Date.now();
+            
+            videoInterval = setInterval(() => {
+                let elapsed = Date.now() - startTime;
+                let pct = Math.min((elapsed / TOTAL_VIDEO_DURATION) * 100, 100);
+                progress.style.width = pct + '%';
+                
+                // Scene Logic
+                updateScenes(elapsed);
+                
+                if (elapsed >= TOTAL_VIDEO_DURATION) {
+                    // Loop
+                    startTime = Date.now();
+                    elapsed = 0;
+                }
+            }, 100);
+            
+            // Force first frame
+            updateScenes(0);
+        }
+
+        function stopCodeVideo() {
+            clearInterval(videoInterval);
+            stopParticles();
+        }
+
+        function updateScenes(elapsed) {
+            // Scenes duration ~3s each (15s total)
+            if (elapsed < 3000) activateScene(1);
+            else if (elapsed < 6000) activateScene(2);
+            else if (elapsed < 9000) activateScene(3);
+            else if (elapsed < 12000) activateScene(4);
+            else activateScene(5);
+        }
+
+        function activateScene(n) {
+            if (currentScene !== n) {
+                // Hide old
+                if (currentScene > 0) document.getElementById('scene'+currentScene).classList.remove('active');
+                // Show new
+                const el = document.getElementById('scene'+n);
+                if(el) el.classList.add('active');
+                currentScene = n;
+            }
+        }
+
+        // --- Particle System (Snow/Confetti) ---
+        function startParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            
+            let particles = [];
+            const particleCount = 100;
+            
+            for(let i=0; i<particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 3 + 1,
+                    d: Math.random() * particleCount,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                });
+            }
+            
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for(let i=0; i<particleCount; i++) {
+                    let p = particles[i];
+                    ctx.beginPath();
+                    ctx.fillStyle = p.color;
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2, false);
+                    ctx.fill();
+                    
+                    // Move
+                    p.y += Math.cos(p.d) + 1 + p.r/2;
+                    p.x += Math.sin(p.d) * 2;
+                    
+                    if(p.y > canvas.height) {
+                        particles[i] = {
+                            x: Math.random() * canvas.width,
+                            y: -10,
+                            r: p.r,
+                            d: p.d,
+                            color: p.color
+                        };
+                    }
+                }
+            }
+            
+            particleInterval = setInterval(draw, 33);
+        }
+
+        function stopParticles() {
+            clearInterval(particleInterval);
+        }
+
+
+        // --- Core Analysis Logic (Existing) ---
+        async function runAnalysis() {
+            const loader = document.getElementById('loadingScreen');
+            const loadText = document.getElementById('loadingText');
+            const progressBar = document.getElementById('progressBar');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            errorAlert.classList.add('hidden');
+            loader.classList.remove('hidden');
+            progressBar.style.width = '5%';
+            loadText.innerText = "Iniciando protocolos de conexão...";
+            
+            let history = null;
+            let latestDraw = null;
+
+            // Tentativa em múltiplas fontes
+            for (let i = 0; i < SOURCES.length; i++) {
+                currentSourceIndex = i;
+                const source = SOURCES[i];
+                loadText.innerText = `Conectando: ${source.name}...`;
+                
+                try {
+                    // 1. Pegar último sorteio
+                    latestDraw = await fetchLatestDrawWithRetry(source);
+                    if(!latestDraw) throw new Error("Falha inicial.");
+
+                    const latestNum = latestDraw.concurso;
+                    loadText.innerText = `Sorteio ${latestNum} encontrado. Baixando histórico...`;
+                    progressBar.style.width = '15%';
+
+                    // 2. Pegar histórico
+                    history = await fetchHistory(source, latestNum);
+                    
+                    if(history && history.length >= 10) break; // Sucesso
+                    else throw new Error("Dados incompletos.");
+
+                } catch (e) {
+                    console.warn(`Fonte ${source.name} falhou.`);
+                    if (i === SOURCES.length - 1) {
+                        document.getElementById('errorMsg').innerText = "Não foi possível conectar. Verifique sua internet.";
+                        errorAlert.classList.remove('hidden');
+                        loader.classList.add('hidden');
+                        updateStatus(false);
+                        return;
+                    }
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+
+            loadText.innerText = "Processando estatísticas...";
+            progressBar.style.width = '90%';
+            await new Promise(r => setTimeout(r, 500));
+
+            analyzeHistory(history);
+            displayTop20();
+            displayMetaData(latestDraw, history.length);
+            updateHeatmapGrid();
+            renderFrequencyRanking(); // New Function
+            updateStatus(true, SOURCES[currentSourceIndex].name);
+
+            loader.classList.add('hidden');
+        }
+
+        // --- Fetching ---
+        async function fetchLatestDrawWithRetry(source) {
+            let attempts = 0;
+            while(attempts < 2) {
+                try {
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 8000);
+                    const response = await fetch(source.url, { signal: controller.signal });
+                    clearTimeout(id);
+                    if (!response.ok) throw new Error("Erro HTTP");
+                    const data = await response.json();
+                    return normalizeData(data, source.type);
+                } catch (e) {
+                    attempts++;
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+            return null;
+        }
+
+        async function fetchHistory(source, latestNum) {
+            const endNum = Math.max(1, latestNum - ANALYSIS_DEPTH + 1);
+            let history = [];
+            let numsToFetch = [];
+            for(let i = latestNum; i >= endNum; i--) numsToFetch.push(i);
+
+            const loadText = document.getElementById('loadingText');
+            const progressBar = document.getElementById('progressBar');
+            let fetchedCount = 0;
+            const chunkSize = 5; 
+
+            for (let i = 0; i < numsToFetch.length; i += chunkSize) {
+                const chunk = numsToFetch.slice(i, i + chunkSize);
+                const results = await Promise.all(chunk.map(num => fetchSingleDraw(source, num)));
+                
+                results.forEach(res => { if(res) history.push(res); });
+
+                fetchedCount += chunk.length;
+                const pct = 15 + Math.round((fetchedCount / numsToFetch.length) * 75);
+                progressBar.style.width = `${pct}%`;
+                loadText.innerText = `Baixando... (${fetchedCount}/${numsToFetch.length})`;
+                await new Promise(r => setTimeout(r, 100));
+            }
+            return history;
+        }
+
+        async function fetchSingleDraw(source, num) {
+            try {
+                const url = `${source.url}/${num}`;
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                const data = await response.json();
+                const norm = normalizeData(data, source.type);
+                return norm ? norm.dezenas.map(d => parseInt(d)) : null;
+            } catch { return null; }
+        }
+
+        function normalizeData(data, type) {
+            if(!data) return null;
+            if (type === 'standard' && data.dezenas) return data;
+            if (type === 'official' && data.listaDezenas) return { concurso: data.numero, dezenas: data.listaDezenas };
+            return null;
+        }
+
+        // --- Analysis Logic ---
+        function analyzeHistory(history) {
+            frequencyMap = {};
+            for(let i=1; i<=60; i++) frequencyMap[i] = 0;
+            history.forEach(draw => {
+                draw.forEach(num => {
+                    if(num >= 1 && num <= 60) frequencyMap[num]++;
+                });
+            });
+
+            selectedNumbers = [];
+            let quadrants = { 1: [], 2: [], 3: [], 4: [] };
+            for(let num=1; num<=60; num++) {
+                let q = getQuadrant(num);
+                quadrants[q].push({ num: num, freq: frequencyMap[num] });
+            }
+
+            for(let q=1; q<=4; q++) {
+                let candidates = quadrants[q].sort((a,b) => b.freq - a.freq);
+                
+                let hotCandidates = candidates.slice(0, 5);
+                let coldCandidates = candidates.slice(-4); 
+                let warmCandidates = candidates.slice(5, -4); 
+
+                let picks = [];
+                // Balanceamento: 2 Quentes, 2 Mornas, 1 Fria
+                if(hotCandidates.length >= 2) picks.push(...hotCandidates.slice(0, 2));
+                else picks.push(...hotCandidates);
+
+                if(warmCandidates.length >= 2) picks.push(...warmCandidates.slice(0, 2));
+                else if(warmCandidates.length > 0) picks.push(...warmCandidates);
+                else picks.push(...hotCandidates.slice(2, 4));
+                
+                if(coldCandidates.length >= 1) picks.push(coldCandidates[coldCandidates.length - 1]);
+                else picks.push(candidates[candidates.length-1]); 
+
+                while(picks.length < 5) {
+                    let nextBest = candidates.find(c => !picks.includes(c));
+                    if(nextBest) picks.push(nextBest);
+                    else break; 
+                }
+                picks = picks.slice(0, 5);
+                selectedNumbers.push(...picks);
+            }
+            selectedNumbers.sort((a,b) => a.num - b.num);
+        }
+
+        function getQuadrant(num) {
+            const col = (num - 1) % 10 + 1;
+            const row = Math.ceil(num / 10);
+            if (row <= 3 && col <= 5) return 1;
+            if (row <= 3 && col > 5) return 2;
+            if (row > 3 && col <= 5) return 3;
+            return 4;
+        }
+
+        function getTemperatureClass(freq, allFreqs) {
+            const sorted = [...allFreqs].sort((a,b) => a-b);
+            const lowThresh = sorted[Math.floor(sorted.length * 0.33)];
+            const highThresh = sorted[Math.floor(sorted.length * 0.66)];
+            
+            if (freq > highThresh) return 'bg-hot';
+            if (freq <= lowThresh) return 'bg-cold';
+            return 'bg-warm';
+        }
+        
+        function getGridColorClass(freq, allFreqs) {
+            const sorted = [...allFreqs].sort((a,b) => a-b);
+            const lowThresh = sorted[Math.floor(sorted.length * 0.33)];
+            const highThresh = sorted[Math.floor(sorted.length * 0.66)];
+            
+            if (freq > highThresh) return 'grid-hot';
+            if (freq <= lowThresh) return 'grid-cold';
+            return 'grid-warm';
+        }
+
+        // --- Rendering ---
+        function displayTop20() {
+            const container = document.getElementById('numbersGrid');
+            container.innerHTML = '';
+            const allFreqs = Object.values(frequencyMap);
+
+            selectedNumbers.forEach((item, index) => {
+                const tempClass = getTemperatureClass(item.freq, allFreqs);
+                const div = document.createElement('div');
+                div.className = `loto-ball ${tempClass} animate-fade-in`;
+                div.style.animationDelay = `${index * 30}ms`;
+                div.innerText = item.num < 10 ? '0'+item.num : item.num;
+                let typeText = "Média";
+                if(tempClass.includes('hot')) typeText = "Forte";
+                if(tempClass.includes('cold')) typeText = "Fria";
+                div.title = `Dezena: ${item.num} | Freq: ${item.freq}x | Tipo: ${typeText}`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderFrequencyRanking() {
+            const container = document.getElementById('frequencyGrid');
+            container.innerHTML = '';
+
+            // Create Array of all 60 numbers with their freq
+            let allStats = [];
+            for(let i=1; i<=60; i++) {
+                allStats.push({ num: i, freq: frequencyMap[i] || 0 });
+            }
+
+            // Sort by frequency (Desc)
+            allStats.sort((a,b) => b.freq - a.freq);
+            
+            // Get all freqs for coloring
+            const allFreqs = allStats.map(s => s.freq);
+
+            allStats.forEach(item => {
+                const colorClass = getGridColorClass(item.freq, allFreqs);
+                const div = document.createElement('div');
+                div.className = `freq-item ${colorClass}`;
+                
+                div.innerHTML = `
+                    <span class="text-sm">${item.num < 10 ? '0'+item.num : item.num}</span>
+                    <span class="freq-count">${item.freq}x</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateStatus(isOnline, sourceName) {
+            const statusDot = document.getElementById('statusDot');
+            const statusPing = document.getElementById('statusPing');
+            const statusText = document.getElementById('statusText');
+            const sourceText = document.getElementById('sourceText');
+
+            if(isOnline) {
+                statusDot.className = "bg-green-500 w-5 h-5 rounded-full border-2 border-black";
+                statusPing.classList.remove('hidden');
+                statusText.innerText = "ONLINE";
+                statusText.classList.add('text-green-700');
+                sourceText.innerText = sourceName;
+            } else {
+                statusDot.className = "bg-red-500 w-5 h-5 rounded-full border-2 border-black";
+                statusPing.classList.add('hidden');
+                statusText.innerText = "OFFLINE";
+                sourceText.innerText = "Erro";
+            }
+        }
+
+        function displayMetaData(latestDraw, totalAnalyzed) {
+            document.getElementById('lastDrawDate').innerText = `Base: ${totalAnalyzed} concursos`;
+            document.getElementById('reliabilityScore').innerText = "#" + latestDraw.concurso;
+        }
+
+        function renderFullCartela() {
+            const container = document.getElementById('fullCartela');
+            container.innerHTML = '';
+            for(let i=1; i<=60; i++) {
+                const div = document.createElement('div');
+                div.id = `cartela-${i}`;
+                
+                // Add border classes logic
+                let classes = 'q-cell grid-neutral';
+                
+                // Vertical division (between col 5 and 6)
+                if (i % 10 === 5) {
+                    classes += ' border-q-right';
+                }
+                
+                // Horizontal division (between row 3 and 4 -> numbers 21-30 are row 3)
+                if (i > 20 && i <= 30) {
+                    classes += ' border-q-bottom';
+                }
+
+                div.className = classes;
+                div.innerText = i < 10 ? '0'+i : i;
+                container.appendChild(div);
+            }
+        }
+
+        function updateHeatmapGrid() {
+            const allFreqs = Object.values(frequencyMap);
+            const selectedSet = new Set(selectedNumbers.map(s => s.num));
+
+            for(let i=1; i<=60; i++) {
+                const el = document.getElementById(`cartela-${i}`);
+                if(!el) continue;
+
+                // Only color if selected
+                if(selectedSet.has(i)) {
+                    const freq = frequencyMap[i] || 0;
+                    const colorClass = getGridColorClass(freq, allFreqs);
+                    // Maintain border classes
+                    const existingBorders = el.className.match(/border-q-[a-z]+/g) || [];
+                    el.className = `q-cell ${colorClass} selected-item ${existingBorders.join(' ')}`;
+                } else {
+                    // Revert to neutral
+                    const existingBorders = el.className.match(/border-q-[a-z]+/g) || [];
+                    el.className = `q-cell grid-neutral ${existingBorders.join(' ')}`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
