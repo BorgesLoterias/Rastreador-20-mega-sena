@@ -1,1 +1,0 @@
-# Rastreador-20-mega-sena
