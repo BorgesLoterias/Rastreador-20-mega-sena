@@ -227,54 +227,50 @@
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 1s ease-in-out;
+            transition: opacity 1.5s ease-in-out;
             pointer-events: none;
+            padding: 20px;
         }
         .video-scene.active {
             opacity: 1;
         }
         .video-text-main {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 900;
             color: #FFD700;
-            text-shadow: 4px 4px 0 #000;
+            text-shadow: 3px 3px 0 #000;
             text-align: center;
-            transform: scale(0.5);
-            transition: transform 4s ease-out;
+            transform: scale(0.8);
+            transition: transform 6s ease-out;
             font-family: 'Montserrat', sans-serif;
-            line-height: 1.2;
-            padding: 0 20px;
+            line-height: 1.4;
+        }
+        @media (min-width: 768px) {
+            .video-text-main { font-size: 3rem; }
         }
         .video-scene.active .video-text-main {
-            transform: scale(1.0);
+            transform: scale(1.1);
         }
         .video-text-sub {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: #fff;
-            margin-top: 10px;
+            margin-top: 15px;
             text-shadow: 2px 2px 0 #000;
             opacity: 0;
-            animation: fadeIn 1s forwards 0.5s;
+            animation: fadeIn 2s forwards 0.5s;
+            font-weight: normal;
         }
         @keyframes fadeIn { to { opacity: 1; } }
         
-        .snowflake {
-            position: absolute;
-            top: -10px;
-            background: #fff;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            to { transform: translateY(500px); }
-        }
         .icon-bounce {
-            font-size: 6rem;
+            font-size: 4rem;
             color: #fff;
             margin-bottom: 20px;
-            animation: bounce-video 2s infinite;
+            animation: bounce-video 3s infinite;
             filter: drop-shadow(0 0 10px gold);
+        }
+        @media (min-width: 768px) {
+            .icon-bounce { font-size: 6rem; }
         }
         @keyframes bounce-video {
             0%, 100% { transform: translateY(0); }
@@ -291,6 +287,11 @@
     </style>
 </head>
 <body class="min-h-screen pb-10">
+
+    <!-- Audio Element (Preloaded) -->
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="https://actions.google.com/sounds/v1/holidays/jingle_bells.ogg" type="audio/ogg">
+    </audio>
 
     <!-- Header Section -->
     <header class="w-full text-center py-8 px-4 bg-gray-900 border-b-8 border-black relative overflow-hidden">
@@ -362,41 +363,60 @@
                     <!-- Scene 1: Intro -->
                     <div id="scene1" class="video-scene active">
                         <i class="fas fa-gift icon-bounce text-red-500"></i>
-                        <h2 class="video-text-main text-white">BORGES & LOTERIAS</h2>
+                        <h2 class="video-text-main text-white">MEUS AMIGOS E<br>MINHAS AMIGAS</h2>
                     </div>
 
-                    <!-- Scene 2: Thanks 2025 -->
+                    <!-- Scene 2: 2025 Journey -->
                     <div id="scene2" class="video-scene">
-                        <i class="fas fa-users icon-bounce text-yellow-400"></i>
-                        <h2 class="video-text-main text-green-400">AOS AMIGOS E AMIGAS<br><span class="text-white text-2xl font-normal">QUE NOS ACOMPANHARAM EM 2025</span></h2>
+                        <i class="fas fa-calendar-check icon-bounce text-blue-400"></i>
+                        <h2 class="video-text-main text-blue-200">2025 FOI UM ANO<br>DE MUITOS DESAFIOS...</h2>
+                        <p class="video-text-sub">Mas juntos, nós superamos cada um deles.</p>
                     </div>
 
-                    <!-- Scene 3: Believe -->
+                    <!-- Scene 3: Friendship -->
                     <div id="scene3" class="video-scene">
-                        <i class="fas fa-heart icon-bounce text-red-500"></i>
-                        <h2 class="video-text-main text-white">OBRIGADO POR ACREDITAREM<br><span class="text-yellow-400 text-3xl">NO MEU TRABALHO</span></h2>
+                        <i class="fas fa-users icon-bounce text-yellow-400"></i>
+                        <h2 class="video-text-main text-green-400">AOS AMIGOS E AMIGAS<br>QUE ESTIVERAM AQUI...</h2>
+                        <p class="video-text-sub">Sua companhia foi o meu maior prêmio.</p>
                     </div>
 
-                    <!-- Scene 4: Gratitude -->
+                    <!-- Scene 4: Trust -->
                     <div id="scene4" class="video-scene">
-                        <i class="fas fa-star icon-bounce text-blue-300"></i>
-                        <h2 class="video-text-main text-blue-200">GRATIDÃO POR<br><span class="text-white">CADA MOMENTO JUNTOS!</span></h2>
+                        <i class="fas fa-handshake icon-bounce text-white"></i>
+                        <h2 class="video-text-main text-white">OBRIGADO POR ACREDITAREM<br><span class="text-yellow-400">NO MEU TRABALHO</span></h2>
+                        <p class="video-text-sub">A confiança de vocês me inspira todos os dias.</p>
+                    </div>
+
+                    <!-- Scene 5: Gratitude -->
+                    <div id="scene5" class="video-scene">
+                        <i class="fas fa-heart icon-bounce text-red-500"></i>
+                        <h2 class="video-text-main text-white">MINHA ETERNA<br><span class="text-red-400">GRATIDÃO</span></h2>
+                        <p class="video-text-sub">Por cada aposta, cada sonho e cada momento compartilhado.</p>
                     </div>
                     
-                    <!-- Scene 5: Final -->
-                    <div id="scene5" class="video-scene">
+                    <!-- Scene 6: Wishes -->
+                    <div id="scene6" class="video-scene">
+                        <i class="fas fa-star icon-bounce text-yellow-300"></i>
+                        <h2 class="video-text-main text-yellow-200">QUE A MAGIA DO NATAL<br>ILUMINE SEUS CAMINHOS</h2>
+                    </div>
+
+                    <!-- Scene 7: Final -->
+                    <div id="scene7" class="video-scene">
                         <i class="fas fa-trophy icon-bounce text-yellow-500"></i>
-                        <h2 class="video-text-main text-yellow-300">QUE 2026 SEJA UM ANO<br>DE MUITA SORTE!</h2>
+                        <h2 class="video-text-main text-white">E QUE 2026 SEJA O ANO<br><span class="text-green-400">DA SUA GRANDE VITÓRIA!</span></h2>
+                        <p class="video-text-sub">Boas Festas! Conte comigo sempre.</p>
                     </div>
                 </div>
                 
                 <!-- Controls (Fake) -->
                 <div class="bg-gray-900 p-2 flex items-center gap-4 text-white">
-                    <i class="fas fa-play"></i>
+                    <button onclick="toggleMusic()" class="hover:text-yellow-400 transition">
+                        <i id="musicIcon" class="fas fa-volume-up text-green-400"></i>
+                    </button>
                     <div class="h-1 bg-gray-700 flex-grow rounded overflow-hidden">
-                        <div id="videoProgress" class="h-full bg-red-500 w-0 transition-all duration-1000 ease-linear"></div>
+                        <div id="videoProgress" class="h-full bg-red-500 w-0 transition-all duration-100 ease-linear"></div>
                     </div>
-                    <span class="text-xs font-mono">HD</span>
+                    <span class="text-xs font-mono">HD • 35s</span>
                 </div>
             </div>
         </div>
@@ -513,11 +533,13 @@
         // Video State
         let videoInterval = null;
         let particleInterval = null;
-        const TOTAL_VIDEO_DURATION = 15000; // Increased to 15 seconds for 5 scenes
+        const TOTAL_VIDEO_DURATION = 35000; // 35 seconds total
         let currentScene = 0;
+        const bgMusic = document.getElementById('bgMusic');
 
         document.addEventListener('DOMContentLoaded', () => {
             renderFullCartela();
+            bgMusic.volume = 1.0; 
         });
 
         // --- NEW: Code-Based Video Logic ---
@@ -525,12 +547,41 @@
             const modal = document.getElementById('videoModal');
             modal.classList.remove('hidden');
             startCodeVideo();
+            
+            // Try to play music immediately on click
+            playAudioSafe();
+        }
+        
+        function playAudioSafe() {
+            bgMusic.currentTime = 0;
+            const playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Autoplay started!
+                    document.getElementById('musicIcon').className = "fas fa-volume-up text-green-400";
+                })
+                .catch(error => {
+                    console.log("Audio autoplay prevented. Showing mute icon.");
+                    document.getElementById('musicIcon').className = "fas fa-volume-mute text-red-500";
+                });
+            }
+        }
+        
+        function toggleMusic() {
+            if(bgMusic.paused) {
+                bgMusic.play();
+                document.getElementById('musicIcon').className = "fas fa-volume-up text-green-400";
+            } else {
+                bgMusic.pause();
+                document.getElementById('musicIcon').className = "fas fa-volume-mute text-red-500";
+            }
         }
 
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             modal.classList.add('hidden');
             stopCodeVideo();
+            bgMusic.pause();
         }
         
         // Clicar fora fecha
@@ -547,7 +598,7 @@
             progress.style.width = '0%';
             
             // Hide all scenes initially
-            [1,2,3,4,5].forEach(n => {
+            [1,2,3,4,5,6,7].forEach(n => {
                 const el = document.getElementById('scene'+n);
                 if(el) el.classList.remove('active');
             });
@@ -563,7 +614,7 @@
                 let pct = Math.min((elapsed / TOTAL_VIDEO_DURATION) * 100, 100);
                 progress.style.width = pct + '%';
                 
-                // Scene Logic
+                // Scene Logic - Distributed over 35s (approx 5s per scene)
                 updateScenes(elapsed);
                 
                 if (elapsed >= TOTAL_VIDEO_DURATION) {
@@ -571,7 +622,7 @@
                     startTime = Date.now();
                     elapsed = 0;
                 }
-            }, 100);
+            }, 50); // Faster update for smoother progress
             
             // Force first frame
             updateScenes(0);
@@ -583,12 +634,14 @@
         }
 
         function updateScenes(elapsed) {
-            // Scenes duration ~3s each (15s total)
-            if (elapsed < 3000) activateScene(1);
-            else if (elapsed < 6000) activateScene(2);
-            else if (elapsed < 9000) activateScene(3);
-            else if (elapsed < 12000) activateScene(4);
-            else activateScene(5);
+            // 7 scenes over 35 seconds = 5 seconds per scene
+            if (elapsed < 5000) activateScene(1);
+            else if (elapsed < 10000) activateScene(2);
+            else if (elapsed < 15000) activateScene(3);
+            else if (elapsed < 20000) activateScene(4);
+            else if (elapsed < 25000) activateScene(5);
+            else if (elapsed < 30000) activateScene(6);
+            else activateScene(7);
         }
 
         function activateScene(n) {
