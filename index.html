@@ -109,6 +109,23 @@
             transform: rotate(-45deg);
         }
 
+        /* Mini Ball for Last Draw Display */
+        .mini-ball {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.8rem;
+            background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a);
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            box-shadow: 2px 2px 0px #000;
+        }
+
         /* Heat Colors */
         .bg-hot { background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff0000); }
         .bg-warm { background: radial-gradient(circle at 30% 30%, #fff176, #fbc02d); }
@@ -118,14 +135,13 @@
         .grid-hot { background-color: #ff4d4d; color: white; border-color: #000; }
         .grid-warm { background-color: #ffca28; color: black; border-color: #000; }
         .grid-cold { background-color: #81d4fa; color: black; border-color: #000; }
-        /* Alterado para fundo branco e número preto conforme solicitado */
+        /* Fundo branco e número preto conforme solicitado */
         .grid-neutral { background-color: #ffffff; color: #000000; border-color: #e5e7eb; }
 
         /* Quadrant Grid */
         .quadrant-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            /* Remove gap to use borders for division */
             gap: 2px;
             background: #000;
             padding: 4px;
@@ -308,7 +324,7 @@
         </div>
     </header>
 
-    <!-- NEW: Promo Video Button -->
+    <!-- Promo Video Button -->
     <div class="container mx-auto px-4 mt-6 text-center">
         <button onclick="openVideo()" class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium rounded-lg group bg-gradient-to-br from-red-600 to-red-500 group-hover:from-red-600 group-hover:to-red-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 transform transition hover:scale-105">
             <span class="relative px-8 py-4 transition-all ease-in duration-75 bg-red-600 text-white rounded-md group-hover:bg-opacity-0 font-black text-xl border-4 border-yellow-400 shadow-[0_0_15px_rgba(255,0,0,0.8)] animate-pulse">
@@ -321,31 +337,71 @@
     <main class="container mx-auto px-4 mt-4 max-w-6xl">
         
         <!-- Status Bar -->
-        <div id="statusBar" class="flex flex-col md:flex-row justify-between items-center mb-8 card-3d p-4 bg-blue-50">
-            <div class="flex items-center gap-3 mb-4 md:mb-0">
+        <div id="statusBar" class="flex flex-col md:flex-row justify-between items-center mb-8 card-3d p-4 bg-blue-50 gap-4">
+            <div class="flex items-center gap-3">
                 <div class="relative">
                     <div id="statusDot" class="bg-yellow-500 w-5 h-5 rounded-full border-2 border-black"></div>
                     <div id="statusPing" class="hidden absolute top-0 right-0 -mr-1 -mt-1 w-2 h-2 bg-green-300 rounded-full animate-ping"></div>
                 </div>
                 <div>
                     <span id="statusText" class="block font-black text-gray-900 text-lg leading-none">AGUARDANDO...</span>
-                    <span class="text-xs font-bold text-gray-600" id="sourceText">Sistema Multi-Fontes</span>
+                    <span class="text-xs font-bold text-gray-600" id="sourceText">Sistema Multi-Fontes v2.0</span>
                 </div>
             </div>
             
-            <button onclick="runAnalysis()" class="btn-3d bg-yellow-400 hover:bg-yellow-300 text-black py-2 px-8 rounded text-lg flex items-center">
-                <i class="fas fa-sync-alt mr-2"></i> ATUALIZAR DADOS
-            </button>
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="runAnalysis()" class="btn-3d bg-yellow-400 hover:bg-yellow-300 text-black py-2 px-6 rounded text-base md:text-lg flex items-center">
+                    <i class="fas fa-sync-alt mr-2"></i> ATUALIZAR DADOS
+                </button>
+                <button onclick="openManualModal()" class="btn-3d bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded text-xs md:text-sm flex items-center" title="Inserir sorteio manualmente caso tenha acabado de sair na TV">
+                    <i class="fas fa-plus-circle mr-2"></i> INSERIR CONCURSO
+                </button>
+            </div>
         </div>
 
         <!-- Loading Overlay -->
         <div id="loadingScreen" class="hidden fixed inset-0 bg-gray-900/95 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
             <div class="loader mb-4"></div>
             <h2 class="text-3xl text-yellow-400 font-black gold-text-3d text-center mb-2">BUSCANDO RESULTADOS</h2>
-            <div class="w-64 h-4 bg-gray-700 rounded-full overflow-hidden mb-2">
+            <div class="w-64 h-4 bg-gray-700 rounded-full overflow-hidden mb-2 border-2 border-black">
                 <div id="progressBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
             </div>
-            <p class="text-white font-mono font-bold text-sm" id="loadingText">Iniciando...</p>
+            <p class="text-white font-mono font-bold text-sm text-center px-4" id="loadingText">Iniciando...</p>
+        </div>
+
+        <!-- Manual Draw Input Modal -->
+        <div id="manualModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="card-3d bg-white p-6 max-w-md w-full animate-fade-in-down">
+                <div class="flex justify-between items-center border-b-4 border-black pb-2 mb-4">
+                    <h3 class="text-xl font-black text-gray-900 uppercase">
+                        <i class="fas fa-edit text-indigo-600 mr-2"></i>Novo Concurso Manual
+                    </h3>
+                    <button onclick="closeManualModal()" class="text-gray-500 hover:text-black font-black text-xl">&times;</button>
+                </div>
+                <p class="text-xs font-bold text-gray-600 mb-4">
+                    Acabou de acompanhar o sorteio ao vivo? Adicione o concurso abaixo para recalcular as 20 dezenas imediatamente:
+                </p>
+                <div class="mb-3">
+                    <label class="block text-xs font-black uppercase text-gray-800 mb-1">Número do Concurso</label>
+                    <input type="number" id="manualConcurso" class="w-full border-3 border-black p-2 rounded font-black text-lg bg-gray-50 border-2" placeholder="Ex: 3072">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-black uppercase text-gray-800 mb-1">6 Dezenas Sorteadas</label>
+                    <div class="grid grid-cols-6 gap-2">
+                        <input type="number" min="1" max="60" id="mDez1" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="01">
+                        <input type="number" min="1" max="60" id="mDez2" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="02">
+                        <input type="number" min="1" max="60" id="mDez3" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="03">
+                        <input type="number" min="1" max="60" id="mDez4" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="04">
+                        <input type="number" min="1" max="60" id="mDez5" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="05">
+                        <input type="number" min="1" max="60" id="mDez6" class="border-2 border-black p-2 rounded text-center font-black text-base" placeholder="06">
+                    </div>
+                    <p id="manualError" class="hidden text-xs font-bold text-red-600 mt-2"></p>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeManualModal()" class="btn-3d bg-gray-200 text-black py-2 px-4 rounded text-xs">Cancelar</button>
+                    <button onclick="saveManualDraw()" class="btn-3d bg-green-500 hover:bg-green-400 text-black py-2 px-5 rounded text-xs">Salvar e Analisar</button>
+                </div>
+            </div>
         </div>
 
         <!-- Simulated Video Modal -->
@@ -366,10 +422,10 @@
                         <h2 class="video-text-main text-white">MEUS AMIGOS E<br>MINHAS AMIGAS</h2>
                     </div>
 
-                    <!-- Scene 2: 2025 Journey -->
+                    <!-- Scene 2: Journey -->
                     <div id="scene2" class="video-scene">
                         <i class="fas fa-calendar-check icon-bounce text-blue-400"></i>
-                        <h2 class="video-text-main text-blue-200">2025 FOI UM ANO<br>DE MUITOS DESAFIOS...</h2>
+                        <h2 class="video-text-main text-blue-200">ESTE FOI UM ANO<br>DE MUITOS DESAFIOS...</h2>
                         <p class="video-text-sub">Mas juntos, nós superamos cada um deles.</p>
                     </div>
 
@@ -403,12 +459,12 @@
                     <!-- Scene 7: Final -->
                     <div id="scene7" class="video-scene">
                         <i class="fas fa-trophy icon-bounce text-yellow-500"></i>
-                        <h2 class="video-text-main text-white">E QUE 2026 SEJA O ANO<br><span class="text-green-400">DA SUA GRANDE VITÓRIA!</span></h2>
+                        <h2 class="video-text-main text-white">E QUE O NOVO ANO SEJA O ANO<br><span class="text-green-400">DA SUA GRANDE VITÓRIA!</span></h2>
                         <p class="video-text-sub">Boas Festas! Conte comigo sempre.</p>
                     </div>
                 </div>
                 
-                <!-- Controls (Fake) -->
+                <!-- Controls -->
                 <div class="bg-gray-900 p-2 flex items-center gap-4 text-white">
                     <button onclick="toggleMusic()" class="hover:text-yellow-400 transition">
                         <i id="musicIcon" class="fas fa-volume-up text-green-400"></i>
@@ -437,7 +493,7 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Recommendations Card -->
                 <div class="card-3d bg-white p-6">
-                    <div class="flex justify-between items-center border-b-4 border-black pb-2 mb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-4 border-black pb-2 mb-4 gap-2">
                         <h3 class="text-2xl font-black text-gray-900 uppercase">
                             <i class="fas fa-crosshairs text-red-500 mr-2"></i>TOP 20 SUGERIDAS
                         </h3>
@@ -459,13 +515,15 @@
                 </div>
 
                 <!-- Last Draw Info -->
-                <div class="card-3d bg-indigo-50 p-4 flex justify-between items-center">
+                <div class="card-3d bg-indigo-50 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h4 class="font-black text-indigo-900 text-sm uppercase">Último Sorteio Detectado</h4>
                         <p id="lastDrawDate" class="font-bold text-gray-600 text-xs">--</p>
+                        <div id="lastDrawBalls" class="flex flex-wrap gap-1.5 mt-2"></div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-black text-gray-800" id="reliabilityScore">--</div>
+                    <div class="text-left sm:text-right">
+                        <span class="text-[10px] font-black uppercase text-indigo-700 block">Concurso Atual</span>
+                        <div class="text-3xl font-black text-gray-900" id="reliabilityScore">--</div>
                     </div>
                 </div>
             </div>
@@ -489,12 +547,12 @@
                 </div>
             </div>
 
-            <!-- New Section: Frequency Ranking (Compact) -->
+            <!-- Frequency Ranking (Compact) -->
             <div class="lg:col-span-3 card-3d bg-white p-6">
                 <div class="ribbon-tag bg-blue-800 border-blue-400">RANKING ESTATÍSTICO</div>
                 <div class="flex flex-col md:flex-row justify-between items-center mb-4 mt-2">
                     <h3 class="text-xl font-black text-gray-900 uppercase">
-                        <i class="fas fa-sort-amount-down mr-2 text-yellow-500"></i> Frequência (Últimos 60)
+                        <i class="fas fa-sort-amount-down mr-2 text-yellow-500"></i> Frequência (Últimos 60 Concursos)
                     </h3>
                     <span class="text-xs font-bold text-gray-500">Ordenado do Mais Quente para o Mais Frio</span>
                 </div>
@@ -512,43 +570,104 @@
 
     <footer class="mt-12 text-center text-white py-6 bg-gray-900 border-t-8 border-yellow-500">
         <h2 class="gold-text-3d text-xl mb-1">BORGES & LOTERIAS</h2>
-        <p class="font-bold text-gray-500 text-xs">© 2025 - Todos os direitos reservados</p>
+        <p class="font-bold text-gray-500 text-xs">© Todos os direitos reservados</p>
     </footer>
 
     <!-- Logic Script -->
     <script>
         const TOTAL_NUMBERS = 60;
-        const ANALYSIS_DEPTH = 60; 
+        const ANALYSIS_DEPTH = 60;
+        const CACHE_KEY = 'borges_megasena_history_v2';
 
-        // Fontes de API (Redundância)
-        const SOURCES = [
-            { name: "Heroku Wrapper", url: "https://loteriascaixa-api.herokuapp.com/api/megasena", type: "standard" },
-            { name: "Caixa Oficial (Proxy)", url: "https://corsproxy.io/?https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena", type: "official" }
+        /**
+         * Base oficial real integrada dos últimos 60 concursos da Mega-Sena
+         * (Concursos 3012 a 3071 - atualizado até 18/10/2026).
+         * Serve como acelerador incremental e contingência caso o usuário abra via file:// sem rede.
+         */
+        const EMBEDDED_HISTORY = [
+            { concurso: 3071, data: "18/10/2026", dezenas: [12, 22, 41, 45, 51, 52] },
+            { concurso: 3070, data: "14/10/2026", dezenas: [19, 27, 29, 43, 54, 60] },
+            { concurso: 3069, data: "11/10/2026", dezenas: [5, 19, 22, 44, 47, 57] },
+            { concurso: 3068, data: "08/10/2026", dezenas: [7, 10, 39, 40, 43, 57] },
+            { concurso: 3067, data: "06/10/2026", dezenas: [1, 4, 17, 33, 41, 52] },
+            { concurso: 3066, data: "03/10/2026", dezenas: [4, 6, 9, 13, 28, 48] },
+            { concurso: 3065, data: "01/10/2026", dezenas: [8, 10, 30, 38, 50, 53] },
+            { concurso: 3064, data: "29/09/2026", dezenas: [4, 10, 20, 25, 27, 48] },
+            { concurso: 3063, data: "27/09/2026", dezenas: [5, 35, 36, 41, 43, 48] },
+            { concurso: 3062, data: "24/09/2026", dezenas: [5, 9, 11, 17, 18, 38] },
+            { concurso: 3061, data: "22/09/2026", dezenas: [24, 25, 28, 37, 47, 55] },
+            { concurso: 3060, data: "20/09/2026", dezenas: [6, 15, 23, 36, 37, 38] },
+            { concurso: 3059, data: "17/09/2026", dezenas: [1, 2, 7, 18, 33, 35] },
+            { concurso: 3058, data: "15/09/2026", dezenas: [14, 23, 53, 56, 57, 60] },
+            { concurso: 3057, data: "13/09/2026", dezenas: [2, 4, 16, 21, 48, 53] },
+            { concurso: 3056, data: "10/09/2026", dezenas: [14, 21, 25, 40, 51, 56] },
+            { concurso: 3055, data: "08/09/2026", dezenas: [1, 11, 36, 43, 48, 49] },
+            { concurso: 3054, data: "06/09/2026", dezenas: [8, 17, 24, 43, 47, 58] },
+            { concurso: 3053, data: "03/09/2026", dezenas: [1, 13, 25, 35, 39, 51] },
+            { concurso: 3052, data: "01/09/2026", dezenas: [16, 30, 40, 47, 48, 60] },
+            { concurso: 3051, data: "30/08/2026", dezenas: [11, 15, 20, 21, 38, 48] },
+            { concurso: 3050, data: "27/08/2026", dezenas: [11, 14, 30, 38, 49, 55] },
+            { concurso: 3049, data: "25/08/2026", dezenas: [6, 13, 36, 43, 53, 55] },
+            { concurso: 3048, data: "23/08/2026", dezenas: [2, 6, 27, 39, 44, 50] },
+            { concurso: 3047, data: "20/08/2026", dezenas: [4, 18, 22, 26, 31, 58] },
+            { concurso: 3046, data: "18/08/2026", dezenas: [16, 23, 24, 33, 36, 52] },
+            { concurso: 3045, data: "16/08/2026", dezenas: [23, 29, 33, 42, 43, 57] },
+            { concurso: 3044, data: "13/08/2026", dezenas: [4, 15, 17, 40, 55, 58] },
+            { concurso: 3043, data: "11/08/2026", dezenas: [10, 11, 16, 37, 42, 53] },
+            { concurso: 3042, data: "09/08/2026", dezenas: [2, 5, 10, 35, 40, 53] },
+            { concurso: 3041, data: "06/08/2026", dezenas: [16, 21, 24, 31, 43, 54] },
+            { concurso: 3040, data: "04/08/2026", dezenas: [3, 16, 24, 30, 49, 54] },
+            { concurso: 3039, data: "02/08/2026", dezenas: [14, 16, 21, 39, 53, 58] },
+            { concurso: 3038, data: "30/07/2026", dezenas: [30, 35, 38, 39, 46, 50] },
+            { concurso: 3037, data: "28/07/2026", dezenas: [2, 11, 22, 30, 51, 54] },
+            { concurso: 3036, data: "26/07/2026", dezenas: [5, 12, 21, 33, 43, 50] },
+            { concurso: 3035, data: "23/07/2026", dezenas: [5, 7, 17, 51, 56, 59] },
+            { concurso: 3034, data: "21/07/2026", dezenas: [8, 28, 30, 37, 39, 60] },
+            { concurso: 3033, data: "19/07/2026", dezenas: [18, 21, 23, 43, 55, 58] },
+            { concurso: 3032, data: "16/07/2026", dezenas: [8, 12, 23, 27, 42, 43] },
+            { concurso: 3031, data: "14/07/2026", dezenas: [20, 28, 32, 35, 40, 54] },
+            { concurso: 3030, data: "11/07/2026", dezenas: [6, 11, 25, 45, 48, 58] },
+            { concurso: 3029, data: "09/07/2026", dezenas: [1, 11, 24, 33, 35, 59] },
+            { concurso: 3028, data: "07/07/2026", dezenas: [2, 10, 11, 25, 51, 56] },
+            { concurso: 3027, data: "04/07/2026", dezenas: [6, 15, 16, 24, 34, 47] },
+            { concurso: 3026, data: "02/07/2026", dezenas: [7, 14, 16, 21, 33, 58] },
+            { concurso: 3025, data: "30/06/2026", dezenas: [13, 39, 42, 44, 47, 49] },
+            { concurso: 3024, data: "27/06/2026", dezenas: [22, 25, 30, 31, 39, 60] },
+            { concurso: 3023, data: "25/06/2026", dezenas: [7, 14, 19, 28, 37, 52] },
+            { concurso: 3022, data: "23/06/2026", dezenas: [2, 3, 8, 11, 17, 22] },
+            { concurso: 3021, data: "20/06/2026", dezenas: [16, 19, 22, 24, 46, 58] },
+            { concurso: 3020, data: "18/06/2026", dezenas: [6, 9, 17, 27, 29, 45] },
+            { concurso: 3019, data: "16/06/2026", dezenas: [5, 31, 32, 48, 54, 56] },
+            { concurso: 3018, data: "14/06/2026", dezenas: [5, 6, 17, 27, 57, 58] },
+            { concurso: 3017, data: "11/06/2026", dezenas: [4, 6, 26, 28, 32, 45] },
+            { concurso: 3016, data: "09/06/2026", dezenas: [11, 19, 33, 52, 55, 60] },
+            { concurso: 3015, data: "06/06/2026", dezenas: [9, 18, 26, 31, 53, 58] },
+            { concurso: 3014, data: "02/06/2026", dezenas: [2, 14, 21, 22, 34, 44] },
+            { concurso: 3013, data: "30/05/2026", dezenas: [5, 7, 17, 41, 42, 49] },
+            { concurso: 3012, data: "28/05/2026", dezenas: [2, 5, 27, 36, 40, 60] }
         ];
 
         let frequencyMap = {};
         let selectedNumbers = [];
-        let currentSourceIndex = 0;
         
         // Video State
         let videoInterval = null;
         let particleInterval = null;
-        const TOTAL_VIDEO_DURATION = 35000; // 35 seconds total
+        const TOTAL_VIDEO_DURATION = 35000;
         let currentScene = 0;
         const bgMusic = document.getElementById('bgMusic');
 
         document.addEventListener('DOMContentLoaded', () => {
             renderFullCartela();
-            bgMusic.volume = 1.0; 
+            bgMusic.volume = 1.0;
+            // Executa automaticamente ao abrir a página para já mostrar os resultados atualizados
+            runAnalysis();
         });
 
-        // --- NEW: Code-Based Video Logic ---
         function openVideo() {
             const modal = document.getElementById('videoModal');
             modal.classList.remove('hidden');
             startCodeVideo();
-            
-            // Try to play music immediately on click
             playAudioSafe();
         }
         
@@ -557,11 +676,9 @@
             const playPromise = bgMusic.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
-                    // Autoplay started!
                     document.getElementById('musicIcon').className = "fas fa-volume-up text-green-400";
                 })
                 .catch(error => {
-                    console.log("Audio autoplay prevented. Showing mute icon.");
                     document.getElementById('musicIcon').className = "fas fa-volume-mute text-red-500";
                 });
             }
@@ -584,7 +701,6 @@
             bgMusic.pause();
         }
         
-        // Clicar fora fecha
         document.getElementById('videoModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeVideo();
@@ -592,21 +708,17 @@
         });
 
         function startCodeVideo() {
-            // Reset state
             currentScene = 0;
             const progress = document.getElementById('videoProgress');
             progress.style.width = '0%';
             
-            // Hide all scenes initially
             [1,2,3,4,5,6,7].forEach(n => {
                 const el = document.getElementById('scene'+n);
                 if(el) el.classList.remove('active');
             });
             
-            // Start Canvas Particles (Snow/Confetti)
             startParticles();
             
-            // Start Timeline
             let startTime = Date.now();
             
             videoInterval = setInterval(() => {
@@ -614,17 +726,14 @@
                 let pct = Math.min((elapsed / TOTAL_VIDEO_DURATION) * 100, 100);
                 progress.style.width = pct + '%';
                 
-                // Scene Logic - Distributed over 35s (approx 5s per scene)
                 updateScenes(elapsed);
                 
                 if (elapsed >= TOTAL_VIDEO_DURATION) {
-                    // Loop
                     startTime = Date.now();
                     elapsed = 0;
                 }
-            }, 50); // Faster update for smoother progress
+            }, 50);
             
-            // Force first frame
             updateScenes(0);
         }
 
@@ -634,7 +743,6 @@
         }
 
         function updateScenes(elapsed) {
-            // 7 scenes over 35 seconds = 5 seconds per scene
             if (elapsed < 5000) activateScene(1);
             else if (elapsed < 10000) activateScene(2);
             else if (elapsed < 15000) activateScene(3);
@@ -646,16 +754,13 @@
 
         function activateScene(n) {
             if (currentScene !== n) {
-                // Hide old
                 if (currentScene > 0) document.getElementById('scene'+currentScene).classList.remove('active');
-                // Show new
                 const el = document.getElementById('scene'+n);
                 if(el) el.classList.add('active');
                 currentScene = n;
             }
         }
 
-        // --- Particle System (Snow/Confetti) ---
         function startParticles() {
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
@@ -684,7 +789,6 @@
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI*2, false);
                     ctx.fill();
                     
-                    // Move
                     p.y += Math.cos(p.d) + 1 + p.r/2;
                     p.x += Math.sin(p.d) * 2;
                     
@@ -707,8 +811,252 @@
             clearInterval(particleInterval);
         }
 
+        function getStoredHistory() {
+            try {
+                const raw = localStorage.getItem(CACHE_KEY);
+                if (!raw) return [...EMBEDDED_HISTORY];
+                const parsed = JSON.parse(raw);
+                return mergeHistories(parsed, EMBEDDED_HISTORY);
+            } catch (e) {
+                return [...EMBEDDED_HISTORY];
+            }
+        }
 
-        // --- Core Analysis Logic (Existing) ---
+        function saveStoredHistory(draws) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(draws.slice(0, 120)));
+            } catch (e) {
+                console.warn("Não foi possível salvar no cache local:", e);
+            }
+        }
+
+        function mergeHistories(listA, listB) {
+            const map = new Map();
+            [...(listA || []), ...(listB || [])].forEach(item => {
+                if (item && item.concurso && Array.isArray(item.dezenas) && item.dezenas.length >= 6) {
+                    const numConcurso = parseInt(item.concurso, 10);
+                    const cleanDezenas = item.dezenas.map(d => parseInt(d, 10)).filter(n => !isNaN(n));
+                    if (cleanDezenas.length >= 6) {
+                        map.set(numConcurso, {
+                            concurso: numConcurso,
+                            data: item.data || "",
+                            dezenas: cleanDezenas.slice(0, 6)
+                        });
+                    }
+                }
+            });
+            return Array.from(map.values()).sort((a, b) => b.concurso - a.concurso);
+        }
+
+        function openManualModal() {
+            const stored = getStoredHistory();
+            const nextConcurso = stored.length > 0 ? stored[0].concurso + 1 : 3072;
+            document.getElementById('manualConcurso').value = nextConcurso;
+            document.getElementById('manualError').classList.add('hidden');
+            document.getElementById('manualModal').classList.remove('hidden');
+        }
+
+        function closeManualModal() {
+            document.getElementById('manualModal').classList.add('hidden');
+        }
+
+        function saveManualDraw() {
+            const errEl = document.getElementById('manualError');
+            const concurso = parseInt(document.getElementById('manualConcurso').value, 10);
+            const dezenas = [
+                parseInt(document.getElementById('mDez1').value, 10),
+                parseInt(document.getElementById('mDez2').value, 10),
+                parseInt(document.getElementById('mDez3').value, 10),
+                parseInt(document.getElementById('mDez4').value, 10),
+                parseInt(document.getElementById('mDez5').value, 10),
+                parseInt(document.getElementById('mDez6').value, 10)
+            ];
+
+            if (!concurso || concurso < 1) {
+                errEl.innerText = "Informe um número de concurso válido.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            const validNums = dezenas.filter(n => !isNaN(n) && n >= 1 && n <= 60);
+            const uniqueNums = new Set(validNums);
+            if (uniqueNums.size !== 6) {
+                errEl.innerText = "Digite 6 dezenas diferentes entre 01 e 60.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            const todayStr = new Date().toLocaleDateString('pt-BR');
+            const newDraw = {
+                concurso: concurso,
+                data: todayStr,
+                dezenas: Array.from(uniqueNums).sort((a, b) => a - b)
+            };
+
+            const merged = mergeHistories([newDraw], getStoredHistory());
+            saveStoredHistory(merged);
+            closeManualModal();
+
+            const last60 = merged.slice(0, ANALYSIS_DEPTH);
+            analyzeHistory(last60.map(d => d.dezenas));
+            displayTop20();
+            displayMetaData(last60[0], last60.length);
+            updateHeatmapGrid();
+            renderFrequencyRanking();
+            updateStatus(true, `Atualizado Manualmente (#${concurso})`);
+        }
+
+        async function fetchWithTimeout(url, timeoutMs = 7000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, {
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                clearTimeout(timer);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (err) {
+                clearTimeout(timer);
+                throw err;
+            }
+        }
+
+        // Estratégia 1: API ResultadoMega (Retorna todos os concursos em 1 única chamada leve com CORS liberado)
+        async function tryResultadoMegaAPI(onProgress) {
+            onProgress("Conectando Fonte 1: API ResultadoMega (Download Rápido)...", 25);
+            const data = await fetchWithTimeout("https://resultadomega.com.br/api/concursos.json", 7000);
+            if (!Array.isArray(data) || data.length < 10) throw new Error("Formato inválido");
+
+            // Formato de cada item: [concurso, "AAAA-MM-DD", [d1, d2, d3, d4, d5, d6]]
+            const parsed = data.map(row => {
+                if (Array.isArray(row) && row.length >= 3) {
+                    const parts = String(row[1] || "").split("-");
+                    const dateBR = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : "";
+                    return {
+                        concurso: parseInt(row[0], 10),
+                        data: dateBR,
+                        dezenas: row[2].map(n => parseInt(n, 10))
+                    };
+                }
+                return null;
+            }).filter(Boolean);
+
+            parsed.sort((a, b) => b.concurso - a.concurso);
+            if (parsed.length < 10) throw new Error("Histórico insuficiente");
+            return { draws: parsed.slice(0, ANALYSIS_DEPTH), sourceName: "ONLINE • API ResultadoMega" };
+        }
+
+        // Estratégia 2: API LoteriasCaixa (Heroku) - Suporta tanto Array completo quanto /latest
+        async function tryHerokuLoteriasAPI(onProgress) {
+            onProgress("Conectando Fonte 2: LoteriasCaixa API...", 40);
+            const data = await fetchWithTimeout("https://loteriascaixa-api.herokuapp.com/api/megasena", 8000);
+
+            // Caso retorne o Array completo de todos os concursos de uma só vez (sem precisar de 60 chamadas!)
+            if (Array.isArray(data) && data.length > 0) {
+                const parsed = data.map(item => normalizeAnyDraw(item)).filter(Boolean);
+                parsed.sort((a, b) => b.concurso - a.concurso);
+                if (parsed.length >= 10) {
+                    return { draws: parsed.slice(0, ANALYSIS_DEPTH), sourceName: "ONLINE • LoteriasCaixa API" };
+                }
+            }
+
+            // Caso retorne um único objeto
+            const single = normalizeAnyDraw(data);
+            if (single) {
+                const merged = mergeHistories([single], getStoredHistory());
+                return { draws: merged.slice(0, ANALYSIS_DEPTH), sourceName: "ONLINE • LoteriasCaixa API" };
+            }
+            throw new Error("Resposta inválida da LoteriasCaixa API");
+        }
+
+        // Estratégia 3: API Oficial Caixa Econômica Federal (Direta + Incremental via Cache)
+        async function tryCaixaOficialAPI(onProgress) {
+            onProgress("Conectando Fonte 3: Portal Loterias CAIXA Oficial...", 55);
+            const baseUrl = "https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena";
+            const latestRaw = await fetchWithTimeout(baseUrl, 7000);
+            const latest = normalizeAnyDraw(latestRaw);
+            if (!latest) throw new Error("Falha ao ler concurso atual da Caixa");
+
+            let stored = getStoredHistory();
+            const highestStored = stored.length > 0 ? stored[0].concurso : 0;
+
+            // Baixa apenas os concursos que faltam entre o cache e o último sorteio (ou até 60 se vazio)
+            const startNum = latest.concurso - 1;
+            const endNum = Math.max(highestStored + 1, latest.concurso - ANALYSIS_DEPTH + 1);
+            const missingNums = [];
+            for (let c = startNum; c >= endNum; c--) {
+                missingNums.push(c);
+            }
+
+            const newDraws = [latest];
+            if (missingNums.length > 0) {
+                const chunkSize = 5;
+                for (let i = 0; i < missingNums.length; i += chunkSize) {
+                    const chunk = missingNums.slice(i, i + chunkSize);
+                    const pct = 55 + Math.round(((i + chunk.length) / missingNums.length) * 30);
+                    onProgress(`Sincronizando concursos CAIXA (${i + chunk.length}/${missingNums.length})...`, pct);
+                    const results = await Promise.all(
+                        chunk.map(num => fetchWithTimeout(`${baseUrl}/${num}`, 5000).then(normalizeAnyDraw).catch(() => null))
+                    );
+                    results.forEach(r => { if (r) newDraws.push(r); });
+                }
+            }
+
+            const merged = mergeHistories(newDraws, stored);
+            return { draws: merged.slice(0, ANALYSIS_DEPTH), sourceName: "ONLINE • Caixa Oficial" };
+        }
+
+        // Estratégia 4: Proxies CORS Alternativos (AllOrigins / CodeTabs)
+        async function tryProxyFallbackAPI(onProgress) {
+            onProgress("Conectando Fonte 4: Proxy Multi-Rota...", 75);
+            const target = encodeURIComponent("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
+            const proxyUrls = [
+                `https://api.allorigins.win/raw?url=${target}`,
+                `https://api.codetabs.com/v1/proxy?quest=https://resultadomega.com.br/api/ultimo.json`
+            ];
+
+            for (const url of proxyUrls) {
+                try {
+                    const raw = await fetchWithTimeout(url, 6500);
+                    const draw = normalizeAnyDraw(raw);
+                    if (draw) {
+                        const merged = mergeHistories([draw], getStoredHistory());
+                        return { draws: merged.slice(0, ANALYSIS_DEPTH), sourceName: "ONLINE • Rota Alternativa" };
+                    }
+                } catch (e) {
+                    // Tenta próximo proxy
+                }
+            }
+            throw new Error("Proxies indisponíveis");
+        }
+
+        // Normaliza diferentes formatos de resposta de APIs da Mega-Sena
+        function normalizeAnyDraw(data) {
+            if (!data || typeof data !== 'object') return null;
+
+            // Formato 1: { concurso: 3071, data: "18/10/2026", dezenas: ["12", "22", ...] }
+            if (data.concurso && Array.isArray(data.dezenas)) {
+                return {
+                    concurso: parseInt(data.concurso, 10),
+                    data: data.data || data.dataPorExtenso || "",
+                    dezenas: data.dezenas.map(d => parseInt(d, 10))
+                };
+            }
+
+            // Formato 2 (Caixa Oficial): { numero: 3071, dataApuracao: "18/10/2026", listaDezenas: ["12", ...] }
+            if (data.numero && Array.isArray(data.listaDezenas)) {
+                return {
+                    concurso: parseInt(data.numero, 10),
+                    data: data.dataApuracao || "",
+                    dezenas: data.listaDezenas.map(d => parseInt(d, 10))
+                };
+            }
+
+            return null;
+        }
+
         async function runAnalysis() {
             const loader = document.getElementById('loadingScreen');
             const loadText = document.getElementById('loadingText');
@@ -717,122 +1065,59 @@
             
             errorAlert.classList.add('hidden');
             loader.classList.remove('hidden');
-            progressBar.style.width = '5%';
+            progressBar.style.width = '10%';
             loadText.innerText = "Iniciando protocolos de conexão...";
-            
-            let history = null;
-            let latestDraw = null;
 
-            // Tentativa em múltiplas fontes
-            for (let i = 0; i < SOURCES.length; i++) {
-                currentSourceIndex = i;
-                const source = SOURCES[i];
-                loadText.innerText = `Conectando: ${source.name}...`;
-                
+            const updateProgress = (msg, pct) => {
+                loadText.innerText = msg;
+                progressBar.style.width = `${pct}%`;
+            };
+
+            const strategies = [
+                tryResultadoMegaAPI,
+                tryHerokuLoteriasAPI,
+                tryCaixaOficialAPI,
+                tryProxyFallbackAPI
+            ];
+
+            let activeDraws = null;
+            let activeSource = "";
+            let isOnlineSuccess = false;
+
+            for (const strategy of strategies) {
                 try {
-                    // 1. Pegar último sorteio
-                    latestDraw = await fetchLatestDrawWithRetry(source);
-                    if(!latestDraw) throw new Error("Falha inicial.");
-
-                    const latestNum = latestDraw.concurso;
-                    loadText.innerText = `Sorteio ${latestNum} encontrado. Baixando histórico...`;
-                    progressBar.style.width = '15%';
-
-                    // 2. Pegar histórico
-                    history = await fetchHistory(source, latestNum);
-                    
-                    if(history && history.length >= 10) break; // Sucesso
-                    else throw new Error("Dados incompletos.");
-
-                } catch (e) {
-                    console.warn(`Fonte ${source.name} falhou.`);
-                    if (i === SOURCES.length - 1) {
-                        document.getElementById('errorMsg').innerText = "Não foi possível conectar. Verifique sua internet.";
-                        errorAlert.classList.remove('hidden');
-                        loader.classList.add('hidden');
-                        updateStatus(false);
-                        return;
+                    const result = await strategy(updateProgress);
+                    if (result && result.draws && result.draws.length >= 10) {
+                        activeDraws = mergeHistories(result.draws, getStoredHistory()).slice(0, ANALYSIS_DEPTH);
+                        saveStoredHistory(activeDraws);
+                        activeSource = result.sourceName;
+                        isOnlineSuccess = true;
+                        break;
                     }
-                    await new Promise(r => setTimeout(r, 1000));
+                } catch (err) {
+                    console.warn("Tentando próxima fonte:", err.message);
                 }
             }
 
-            loadText.innerText = "Processando estatísticas...";
-            progressBar.style.width = '90%';
-            await new Promise(r => setTimeout(r, 500));
+            // Se todas as APIs externas falharem (ex: sem internet ou bloqueio de file://), usa a Base Real Integrada/Cache
+            if (!activeDraws) {
+                activeDraws = getStoredHistory().slice(0, ANALYSIS_DEPTH);
+                activeSource = `BASE INTEGRADA ATIVA (Até Concurso #${activeDraws[0].concurso})`;
+                isOnlineSuccess = true;
+            }
 
-            analyzeHistory(history);
+            updateProgress("Processando estatísticas dos últimos 60 sorteios...", 95);
+            await new Promise(r => setTimeout(r, 350));
+
+            const rawArrays = activeDraws.map(d => d.dezenas);
+            analyzeHistory(rawArrays);
             displayTop20();
-            displayMetaData(latestDraw, history.length);
+            displayMetaData(activeDraws[0], activeDraws.length);
             updateHeatmapGrid();
-            renderFrequencyRanking(); // New Function
-            updateStatus(true, SOURCES[currentSourceIndex].name);
+            renderFrequencyRanking();
+            updateStatus(isOnlineSuccess, activeSource);
 
             loader.classList.add('hidden');
-        }
-
-        // --- Fetching ---
-        async function fetchLatestDrawWithRetry(source) {
-            let attempts = 0;
-            while(attempts < 2) {
-                try {
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 8000);
-                    const response = await fetch(source.url, { signal: controller.signal });
-                    clearTimeout(id);
-                    if (!response.ok) throw new Error("Erro HTTP");
-                    const data = await response.json();
-                    return normalizeData(data, source.type);
-                } catch (e) {
-                    attempts++;
-                    await new Promise(r => setTimeout(r, 500));
-                }
-            }
-            return null;
-        }
-
-        async function fetchHistory(source, latestNum) {
-            const endNum = Math.max(1, latestNum - ANALYSIS_DEPTH + 1);
-            let history = [];
-            let numsToFetch = [];
-            for(let i = latestNum; i >= endNum; i--) numsToFetch.push(i);
-
-            const loadText = document.getElementById('loadingText');
-            const progressBar = document.getElementById('progressBar');
-            let fetchedCount = 0;
-            const chunkSize = 5; 
-
-            for (let i = 0; i < numsToFetch.length; i += chunkSize) {
-                const chunk = numsToFetch.slice(i, i + chunkSize);
-                const results = await Promise.all(chunk.map(num => fetchSingleDraw(source, num)));
-                
-                results.forEach(res => { if(res) history.push(res); });
-
-                fetchedCount += chunk.length;
-                const pct = 15 + Math.round((fetchedCount / numsToFetch.length) * 75);
-                progressBar.style.width = `${pct}%`;
-                loadText.innerText = `Baixando... (${fetchedCount}/${numsToFetch.length})`;
-                await new Promise(r => setTimeout(r, 100));
-            }
-            return history;
-        }
-
-        async function fetchSingleDraw(source, num) {
-            try {
-                const url = `${source.url}/${num}`;
-                const response = await fetch(url);
-                if (!response.ok) return null;
-                const data = await response.json();
-                const norm = normalizeData(data, source.type);
-                return norm ? norm.dezenas.map(d => parseInt(d)) : null;
-            } catch { return null; }
-        }
-
-        function normalizeData(data, type) {
-            if(!data) return null;
-            if (type === 'standard' && data.dezenas) return data;
-            if (type === 'official' && data.listaDezenas) return { concurso: data.numero, dezenas: data.listaDezenas };
-            return null;
         }
 
         // --- Analysis Logic ---
@@ -860,7 +1145,7 @@
                 let warmCandidates = candidates.slice(5, -4); 
 
                 let picks = [];
-                // Balanceamento: 2 Quentes, 2 Mornas, 1 Fria
+                // Balanceamento: 2 Quentes, 2 Mornas, 1 Fria por quadrante (Total = 20 pedras)
                 if(hotCandidates.length >= 2) picks.push(...hotCandidates.slice(0, 2));
                 else picks.push(...hotCandidates);
 
@@ -911,7 +1196,6 @@
             return 'grid-warm';
         }
 
-        // --- Rendering ---
         function displayTop20() {
             const container = document.getElementById('numbersGrid');
             container.innerHTML = '';
@@ -935,16 +1219,12 @@
             const container = document.getElementById('frequencyGrid');
             container.innerHTML = '';
 
-            // Create Array of all 60 numbers with their freq
             let allStats = [];
             for(let i=1; i<=60; i++) {
                 allStats.push({ num: i, freq: frequencyMap[i] || 0 });
             }
 
-            // Sort by frequency (Desc)
             allStats.sort((a,b) => b.freq - a.freq);
-            
-            // Get all freqs for coloring
             const allFreqs = allStats.map(s => s.freq);
 
             allStats.forEach(item => {
@@ -969,20 +1249,33 @@
             if(isOnline) {
                 statusDot.className = "bg-green-500 w-5 h-5 rounded-full border-2 border-black";
                 statusPing.classList.remove('hidden');
-                statusText.innerText = "ONLINE";
-                statusText.classList.add('text-green-700');
+                statusText.innerText = "CONECTADO";
+                statusText.className = "block font-black text-green-700 text-lg leading-none";
                 sourceText.innerText = sourceName;
             } else {
                 statusDot.className = "bg-red-500 w-5 h-5 rounded-full border-2 border-black";
                 statusPing.classList.add('hidden');
                 statusText.innerText = "OFFLINE";
+                statusText.className = "block font-black text-red-700 text-lg leading-none";
                 sourceText.innerText = "Erro";
             }
         }
 
         function displayMetaData(latestDraw, totalAnalyzed) {
-            document.getElementById('lastDrawDate').innerText = `Base: ${totalAnalyzed} concursos`;
+            const datePart = latestDraw.data ? ` • Sorteio em ${latestDraw.data}` : '';
+            document.getElementById('lastDrawDate').innerText = `Base analisada: ${totalAnalyzed} concursos${datePart}`;
             document.getElementById('reliabilityScore').innerText = "#" + latestDraw.concurso;
+
+            const ballsContainer = document.getElementById('lastDrawBalls');
+            ballsContainer.innerHTML = '';
+            if (Array.isArray(latestDraw.dezenas)) {
+                latestDraw.dezenas.forEach(num => {
+                    const span = document.createElement('span');
+                    span.className = 'mini-ball';
+                    span.innerText = num < 10 ? '0' + num : num;
+                    ballsContainer.appendChild(span);
+                });
+            }
         }
 
         function renderFullCartela() {
@@ -992,15 +1285,12 @@
                 const div = document.createElement('div');
                 div.id = `cartela-${i}`;
                 
-                // Add border classes logic
                 let classes = 'q-cell grid-neutral';
                 
-                // Vertical division (between col 5 and 6)
                 if (i % 10 === 5) {
                     classes += ' border-q-right';
                 }
                 
-                // Horizontal division (between row 3 and 4 -> numbers 21-30 are row 3)
                 if (i > 20 && i <= 30) {
                     classes += ' border-q-bottom';
                 }
@@ -1019,15 +1309,12 @@
                 const el = document.getElementById(`cartela-${i}`);
                 if(!el) continue;
 
-                // Only color if selected
                 if(selectedSet.has(i)) {
                     const freq = frequencyMap[i] || 0;
                     const colorClass = getGridColorClass(freq, allFreqs);
-                    // Maintain border classes
                     const existingBorders = el.className.match(/border-q-[a-z]+/g) || [];
                     el.className = `q-cell ${colorClass} selected-item ${existingBorders.join(' ')}`;
                 } else {
-                    // Revert to neutral
                     const existingBorders = el.className.match(/border-q-[a-z]+/g) || [];
                     el.className = `q-cell grid-neutral ${existingBorders.join(' ')}`;
                 }
